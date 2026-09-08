@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FactMesh</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-
 <body>
 
   <header class="header">
@@ -15,10 +13,10 @@
       <div class="logo-group">
         <div class="logo-mark">
           <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
-            <rect x="1" y="1" width="7" height="7" fill="currentColor" />
-            <rect x="10" y="1" width="7" height="7" fill="currentColor" opacity="0.6" />
-            <rect x="1" y="10" width="7" height="7" fill="currentColor" opacity="0.6" />
-            <rect x="10" y="10" width="7" height="7" fill="currentColor" opacity="0.3" />
+            <rect x="1" y="1" width="7" height="7" fill="currentColor"/>
+            <rect x="10" y="1" width="7" height="7" fill="currentColor" opacity="0.6"/>
+            <rect x="1" y="10" width="7" height="7" fill="currentColor" opacity="0.6"/>
+            <rect x="10" y="10" width="7" height="7" fill="currentColor" opacity="0.3"/>
           </svg>
         </div>
         <span class="logo-name">FactMesh</span>
@@ -42,17 +40,15 @@
 
     <!-- Tab: Documents & Upload -->
     <section id="tab-upload" class="tab-content" role="tabpanel">
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()" role="button"
-        tabindex="0" aria-label="Upload PDF">
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()" role="button" tabindex="0" aria-label="Upload PDF">
         <input type="file" id="fileInput" accept=".pdf" style="display:none;" onchange="handleFileSelect(event)">
         <div class="dropzone-body">
           <div class="dropzone-icon-wrap">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="square" stroke-linejoin="miter">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="12" y1="18" x2="12" y2="12" />
-              <polyline points="9 15 12 12 15 15" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <polyline points="9 15 12 12 15 15"/>
             </svg>
           </div>
           <div>
@@ -61,9 +57,7 @@
           </div>
         </div>
         <div id="uploadProgress" class="upload-progress" style="display:none;">
-          <div class="upload-progress-bar">
-            <div class="upload-progress-fill" id="uploadProgressFill"></div>
-          </div>
+          <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
           <span id="uploadStatusText" class="upload-status-text">Processing…</span>
         </div>
       </div>
@@ -86,16 +80,8 @@
             </tr>
           </thead>
           <tbody id="documentsTableBody">
-            <tr class="skeleton-row">
-              <td colspan="7">
-                <div class="skeleton-line" style="width:60%"></div>
-              </td>
-            </tr>
-            <tr class="skeleton-row">
-              <td colspan="7">
-                <div class="skeleton-line" style="width:45%"></div>
-              </td>
-            </tr>
+            <tr class="skeleton-row"><td colspan="7"><div class="skeleton-line" style="width:60%"></div></td></tr>
+            <tr class="skeleton-row"><td colspan="7"><div class="skeleton-line" style="width:45%"></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -107,13 +93,8 @@
         <h2 class="section-title">Fact Mesh</h2>
         <div class="filter-bar">
           <div class="search-wrap">
-            <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="square">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input type="text" id="factSearchInput" class="search-input" placeholder="Search facts…"
-              oninput="debounceFactSearch()">
+            <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="factSearchInput" class="search-input" placeholder="Search facts…" oninput="debounceFactSearch()">
           </div>
           <select id="factDocFilter" class="select-filter" onchange="loadFacts()">
             <option value="">All Documents</option>
@@ -136,16 +117,8 @@
             </tr>
           </thead>
           <tbody id="factsTableBody">
-            <tr class="skeleton-row">
-              <td colspan="8">
-                <div class="skeleton-line" style="width:70%"></div>
-              </td>
-            </tr>
-            <tr class="skeleton-row">
-              <td colspan="8">
-                <div class="skeleton-line" style="width:55%"></div>
-              </td>
-            </tr>
+            <tr class="skeleton-row"><td colspan="8"><div class="skeleton-line" style="width:70%"></div></td></tr>
+            <tr class="skeleton-row"><td colspan="8"><div class="skeleton-line" style="width:55%"></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -163,11 +136,7 @@
             <option value="reconciled">Reconciled</option>
           </select>
           <button class="btn btn-ghost" onclick="loadRelations()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="square">
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Refresh
           </button>
         </div>
@@ -189,16 +158,8 @@
       </div>
 
       <div class="relation-cards-grid" id="relationsContainer">
-        <div class="skeleton-card">
-          <div class="skeleton-line" style="width:30%"></div>
-          <div class="skeleton-line" style="width:80%; margin-top:0.75rem"></div>
-          <div class="skeleton-line" style="width:60%; margin-top:0.5rem"></div>
-        </div>
-        <div class="skeleton-card">
-          <div class="skeleton-line" style="width:30%"></div>
-          <div class="skeleton-line" style="width:80%; margin-top:0.75rem"></div>
-          <div class="skeleton-line" style="width:60%; margin-top:0.5rem"></div>
-        </div>
+        <div class="skeleton-card"><div class="skeleton-line" style="width:30%"></div><div class="skeleton-line" style="width:80%; margin-top:0.75rem"></div><div class="skeleton-line" style="width:60%; margin-top:0.5rem"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line" style="width:30%"></div><div class="skeleton-line" style="width:80%; margin-top:0.75rem"></div><div class="skeleton-line" style="width:60%; margin-top:0.5rem"></div></div>
       </div>
     </section>
 
@@ -206,19 +167,14 @@
 
   <!-- Evidence Drawer -->
   <div class="drawer-backdrop" id="evidenceModal" onclick="closeModal(event)">
-    <aside class="drawer" onclick="event.stopPropagation()" role="dialog" aria-modal="true"
-      aria-label="Evidence Inspector">
+    <aside class="drawer" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Evidence Inspector">
       <div class="drawer-header">
         <div class="drawer-title-group">
           <span class="drawer-label">Evidence Inspector</span>
           <span class="badge badge-indigo" id="modalPageBadge">Page 1</span>
         </div>
         <button class="close-btn" onclick="closeModalDirect()" aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="square">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
@@ -273,5 +229,4 @@
 
   <script src="/static/app.js"></script>
 </body>
-
 </html>
