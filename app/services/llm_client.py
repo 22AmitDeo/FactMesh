@@ -163,35 +163,41 @@ class LLMClient:
 
     def _heuristic_relation_judge(self, prompt: str) -> Dict[str, Any]:
         """Heuristic relationship reasoning between Fact A and Fact B."""
-        # Extract fact details from prompt
-        val_a_match = re.search(r"Fact A Value:\s*(.*?)\n", prompt)
-        val_b_match = re.search(r"Fact B Value:\s*(.*?)\n", prompt)
-        time_a_match = re.search(r"Fact A Time Scope:\s*(.*?)\n", prompt)
-        time_b_match = re.search(r"Fact B Time Scope:\s*(.*?)\n", prompt)
-        subj_a_match = re.search(r"Fact A Subject:\s*(.*?)\n", prompt)
-        subj_b_match = re.search(r"Fact B Subject:\s*(.*?)\n", prompt)
+        # Extract section blocks for Fact A and Fact B
+        part_a = prompt.split("--- FACT A ---")[1].split("--- FACT B ---")[0] if "--- FACT A ---" in prompt else ""
+        part_b = prompt.split("--- FACT B ---")[1].split("Provide your judgment")[0] if "--- FACT B ---" in prompt else ""
 
-        val_a = val_a_match.group(1).strip().lower() if val_a_match else ""
-        val_b = val_b_match.group(1).strip().lower() if val_b_match else ""
-        time_a = time_a_match.group(1).strip().lower() if time_a_match else "none"
-        time_b = time_b_match.group(1).strip().lower() if time_b_match else "none"
+        def extract_field(block: str, field_name: str) -> str:
+            m = re.search(rf"{field_name}:\s*(.*?)(?:\n|$)", block, re.IGNORECASE)
+            return m.group(1).strip() if m else ""
 
-        # Case 1: Reconciled by context if time scopes differ
-        if time_a != time_b and time_a != "none" and time_b != "none":
+        val_a = extract_field(part_a, "Value").lower()
+        val_b = extract_field(part_b, "Value").lower()
+        time_a = extract_field(part_a, "Time Scope").lower()
+        time_b = extract_field(part_b, "Time Scope").lower()
+        subj_a = extract_field(part_a, "Subject").lower()
+        subj_b = extract_field(part_b, "Subject").lower()
+
+        # Case 1: Reconciled by context if time scopes differ (e.g. Q4 vs FY24)
+        if (
+            time_a != time_b
+            and time_a not in ["n/a", "none", ""]
+            and time_b not in ["n/a", "none", ""]
+        ):
             return {
                 "type": "reconciled",
                 "difference_type": "time_scope",
-                "explanation": f"Apparent contradiction between {val_a} and {val_b} is reconciled by differing time periods ({time_a.upper()} vs {time_b.upper()})."
+                "explanation": f"Apparent contradiction between '{val_a}' and '{val_b}' is reconciled by differing reporting periods ({time_a.upper()} vs {time_b.upper()})."
             }
 
-        # Case 2: Same or normalized value -> corroborates
+        # Case 2: Same or normalized numerical value -> corroborates
         norm_val_a = re.sub(r"[^\d\.]", "", val_a)
         norm_val_b = re.sub(r"[^\d\.]", "", val_b)
         if norm_val_a and norm_val_b and norm_val_a == norm_val_b:
             return {
                 "type": "corroborates",
                 "difference_type": "none",
-                "explanation": f"Both documents state equivalent values ({val_a} and {val_b}) for this metric."
+                "explanation": f"Both documents corroborate equivalent values ({val_a} and {val_b}) for this metric."
             }
 
         # Case 3: Same scope, conflicting values -> contradicts
@@ -199,7 +205,7 @@ class LLMClient:
             return {
                 "type": "contradicts",
                 "difference_type": "value_mismatch",
-                "explanation": f"Direct contradiction on the same metric: Document reports {val_a} whereas other source reports {val_b}."
+                "explanation": f"Direct contradiction on the same metric: Source reports {val_a} whereas other source reports {val_b}."
             }
 
         return {
