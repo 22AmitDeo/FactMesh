@@ -30,3 +30,11 @@ APPROACH_STORYBOARD.md
 .idea/
 .pytest_cache/
 .coverage
+
+# AI agent folders
+.agent/
+.claude/
+.cursor/
+.gemini/
+.impeccable/
+.amazonq/
