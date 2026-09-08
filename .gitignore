@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Environment variables & secrets
+.env
+*.env.local
+
+# SQLite Databases & temporary files
+*.db
+*.sqlite3
+data/uploads/
+
+# Storyboard / Prep docs (per instructions: scratch space, do not push to submission repo)
+docs/
+APPROACH_STORYBOARD.md
+
+# IDE & testing
+.vscode/
+.idea/
+.pytest_cache/
+.coverage
