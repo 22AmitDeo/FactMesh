@@ -11,111 +11,93 @@
 </head>
 <body>
 
-  <!-- Header -->
   <header class="header">
     <div class="logo-group">
       <div class="logo-badge">FM</div>
       <div class="logo-text">
         <h1>FactMesh</h1>
-        <p>Fact Knowledge Layer &bull; Superjoin VIT 2026</p>
+        <p>Fact Knowledge Layer</p>
       </div>
     </div>
-    
     <nav class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('demo')">🎯 4 Demo Cases</button>
+      <button class="tab-btn active" onclick="switchTab('upload')">📤 Documents</button>
+      <button class="tab-btn" onclick="switchTab('facts')">📑 Facts</button>
       <button class="tab-btn" onclick="switchTab('relations')">🔗 Relationships</button>
-      <button class="tab-btn" onclick="switchTab('facts')">📑 Fact Mesh</button>
-      <button class="tab-btn" onclick="switchTab('upload')">📤 Ingest & Docs</button>
     </nav>
   </header>
 
   <main class="container">
-    
-    <!-- Top Level Stats Bar -->
+
     <section class="stats-grid" id="statsGrid">
       <div class="stat-card">
-        <span class="stat-label">Ingested Documents</span>
+        <span class="stat-label">Documents</span>
         <span class="stat-value" id="statDocs">0</span>
-        <span class="stat-tag"><span class="badge badge-indigo">PyMuPDF Streamed</span></span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Extracted Facts</span>
         <span class="stat-value" id="statFacts">0</span>
-        <span class="stat-tag"><span class="badge badge-indigo">Grounded & Verified</span></span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Cross-Doc Relations</span>
+        <span class="stat-label">Relationships</span>
         <span class="stat-value" id="statRelations">0</span>
-        <span class="stat-tag"><span class="badge badge-emerald">Incremental ANN</span></span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Corroborations</span>
         <span class="stat-value" id="statCorroborates" style="color: var(--accent-emerald);">0</span>
-        <span class="stat-tag"><span class="badge badge-emerald">Verified In Sync</span></span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Contradictions</span>
         <span class="stat-value" id="statContradicts" style="color: var(--accent-crimson);">0</span>
-        <span class="stat-tag"><span class="badge badge-crimson">Flagged For Audit</span></span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Reconciled by Context</span>
+        <span class="stat-label">Reconciled</span>
         <span class="stat-value" id="statReconciled" style="color: var(--accent-amber);">0</span>
-        <span class="stat-tag"><span class="badge badge-amber">Time/Scope Explained</span></span>
       </div>
     </section>
 
-    <!-- Tab 1: 4 Demo Cases Tour (Default view for evaluation) -->
-    <section id="tab-demo" class="tab-content">
+    <!-- Tab: Documents & Upload -->
+    <section id="tab-upload" class="tab-content">
       <div class="section-header">
-        <div>
-          <h2 class="section-title">Assignment Demonstration Showcase</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Interactive verification of the four required evaluation scenarios with grounded evidence and system reasoning.</p>
-        </div>
-        <button class="btn btn-secondary" onclick="loadDemoCases()">🔄 Refresh Showcase</button>
+        <h2 class="section-title">Documents</h2>
       </div>
 
-      <div class="relation-cards-grid" id="demoCasesContainer">
-        <!-- Demo cards loaded dynamically via JS -->
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".pdf" style="display: none;" onchange="handleFileSelect(event)">
+        <div class="dropzone-icon">📄</div>
+        <h3>Drop a PDF here or click to browse</h3>
+        <p>Pages are streamed and facts are extracted incrementally</p>
+        <div id="uploadProgress" style="display: none; margin-top: 1rem;">
+          <span class="badge badge-indigo" id="uploadStatusText">Processing...</span>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Pages</th>
+              <th>Size</th>
+              <th>Status</th>
+              <th>Facts</th>
+              <th>Uploaded</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="documentsTableBody"></tbody>
+        </table>
       </div>
     </section>
 
-    <!-- Tab 2: Cross-Document Relationships -->
-    <section id="tab-relations" class="tab-content" style="display: none;">
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">Cross-Document Relationship Engine</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Discovered via dense vector candidate retrieval + LLM pairwise relationship reasoning.</p>
-        </div>
-        <div class="filter-bar">
-          <select id="relationTypeFilter" class="select-filter" onchange="loadRelations()">
-            <option value="">All Relation Types</option>
-            <option value="corroborates">Corroborates (In Sync)</option>
-            <option value="contradicts">Contradicts (Direct Conflict)</option>
-            <option value="reconciled">Reconciled (Contextual Difference)</option>
-          </select>
-          <button class="btn btn-secondary" onclick="loadRelations()">Refresh</button>
-        </div>
-      </div>
-
-      <div class="relation-cards-grid" id="relationsContainer">
-        <!-- Relation cards loaded dynamically -->
-      </div>
-    </section>
-
-    <!-- Tab 3: Fact Mesh Explorer -->
+    <!-- Tab: Facts -->
     <section id="tab-facts" class="tab-content" style="display: none;">
       <div class="section-header">
-        <div>
-          <h2 class="section-title">Fact Mesh Explorer</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Dynamic fact triples with open extra attributes and exact page coordinate grounding.</p>
-        </div>
+        <h2 class="section-title">Fact Mesh</h2>
         <div class="filter-bar">
           <input type="text" id="factSearchInput" class="search-input" placeholder="Search facts..." oninput="debounceFactSearch()">
           <select id="factDocFilter" class="select-filter" onchange="loadFacts()">
             <option value="">All Documents</option>
           </select>
-          <button class="btn btn-secondary" onclick="loadFacts()">Filter</button>
         </div>
       </div>
 
@@ -129,67 +111,41 @@
               <th>Predicate</th>
               <th>Value</th>
               <th>Scope / Unit</th>
-              <th>Dynamic Metadata</th>
+              <th>Metadata</th>
               <th>Evidence</th>
             </tr>
           </thead>
-          <tbody id="factsTableBody">
-            <!-- Facts rows loaded dynamically -->
-          </tbody>
+          <tbody id="factsTableBody"></tbody>
         </table>
       </div>
     </section>
 
-    <!-- Tab 4: Ingest & Docs -->
-    <section id="tab-upload" class="tab-content" style="display: none;">
+    <!-- Tab: Relationships -->
+    <section id="tab-relations" class="tab-content" style="display: none;">
       <div class="section-header">
-        <div>
-          <h2 class="section-title">Document Ingestion & PDF Upload</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Streams pages, validates quotes against hallucination, and incrementally updates the knowledge layer.</p>
+        <h2 class="section-title">Cross-Document Relationships</h2>
+        <div class="filter-bar">
+          <select id="relationTypeFilter" class="select-filter" onchange="loadRelations()">
+            <option value="">All Types</option>
+            <option value="corroborates">Corroborates</option>
+            <option value="contradicts">Contradicts</option>
+            <option value="reconciled">Reconciled</option>
+          </select>
+          <button class="btn btn-secondary" onclick="loadRelations()">Refresh</button>
         </div>
       </div>
 
-      <!-- Drag & Drop Zone -->
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
-        <input type="file" id="fileInput" accept=".pdf" style="display: none;" onchange="handleFileSelect(event)">
-        <div class="dropzone-icon">📄</div>
-        <h3>Drop PDF file here or click to browse</h3>
-        <p>Supports corporate annual reports, earnings presentations, and institutional filings (up to 100+ pages streamed page-by-page)</p>
-        <div id="uploadProgress" style="display: none; margin-top: 1rem;">
-          <span class="badge badge-indigo" id="uploadStatusText">Uploading & Streaming Pages...</span>
-        </div>
-      </div>
-
-      <!-- Ingested Documents List -->
-      <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-family: var(--font-display);">Ingested Knowledge Sources</h3>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Filename</th>
-              <th>Pages</th>
-              <th>File Size</th>
-              <th>Status</th>
-              <th>Extracted Facts</th>
-              <th>Uploaded</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="documentsTableBody">
-            <!-- Document rows loaded dynamically -->
-          </tbody>
-        </table>
-      </div>
+      <div class="relation-cards-grid" id="relationsContainer"></div>
     </section>
 
   </main>
 
-  <!-- Evidence Grounding Inspector Modal -->
+  <!-- Evidence Modal -->
   <div class="modal-backdrop" id="evidenceModal" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-header">
         <div>
-          <h3 id="modalDocTitle" style="font-size: 1.1rem; font-family: var(--font-display);">Evidence Grounding Inspector</h3>
+          <h3 id="modalDocTitle" style="font-size: 1.1rem; font-family: var(--font-display);">Evidence Inspector</h3>
           <span class="badge badge-indigo" id="modalPageBadge">Page 1</span>
         </div>
         <button class="close-btn" onclick="closeModalDirect()">&times;</button>
@@ -206,29 +162,29 @@
           <span class="badge badge-indigo" id="modalCharSpan">[0 : 0]</span>
         </div>
         <div>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">Spatial Bounding Box:</span>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">Bounding Box:</span>
           <span class="badge badge-indigo" id="modalBbox">[x0, y0, x1, y1]</span>
         </div>
         <div>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">Grounding Status:</span>
-          <span class="badge badge-emerald" id="modalGroundingStatus">Verified Substring</span>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">Grounding:</span>
+          <span class="badge badge-emerald" id="modalGroundingStatus">Verified</span>
         </div>
       </div>
 
       <div>
-        <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Source Document Text (Highlighted Evidence Quote)</h4>
+        <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Source Text</h4>
         <div class="evidence-box" id="modalEvidenceText"></div>
       </div>
 
       <div>
-        <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Dynamic Open Schema (`extra` JSON payload)</h4>
+        <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Extra Metadata</h4>
         <pre class="evidence-box" id="modalExtraJson" style="max-height: 140px;"></pre>
       </div>
     </div>
   </div>
 
   <footer>
-    FactMesh &bull; Fact Knowledge Layer with Incremental Grounded Reasoning &bull; Superjoin VIT 2026 Engineering Intern
+    FactMesh &bull; Fact Knowledge Layer
   </footer>
 
   <script src="/static/app.js"></script>

@@ -1,12 +1,9 @@
-// FactMesh Client-side Application Logic
-
-let currentTab = 'demo';
+let currentTab = 'upload';
 let searchTimeout = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initDropzone();
   loadStats();
-  loadDemoCases();
   loadDocuments();
 });
 
@@ -19,10 +16,9 @@ function switchTab(tabId) {
   if (activeContent) activeContent.style.display = 'block';
 
   const buttons = document.querySelectorAll('.tab-btn');
-  if (tabId === 'demo') buttons[0].classList.add('active');
-  if (tabId === 'relations') { buttons[1].classList.add('active'); loadRelations(); }
-  if (tabId === 'facts') { buttons[2].classList.add('active'); loadFacts(); }
-  if (tabId === 'upload') { buttons[3].classList.add('active'); loadDocuments(); }
+  if (tabId === 'upload') { buttons[0].classList.add('active'); loadDocuments(); }
+  if (tabId === 'facts')  { buttons[1].classList.add('active'); loadFacts(); }
+  if (tabId === 'relations') { buttons[2].classList.add('active'); loadRelations(); }
 }
 
 async function loadStats() {
@@ -41,87 +37,10 @@ async function loadStats() {
   }
 }
 
-async function loadDemoCases() {
-  const container = document.getElementById('demoCasesContainer');
-  container.innerHTML = '<div style="color: var(--text-muted);">Loading demonstration cases...</div>';
-
-  try {
-    const res = await fetch('/api/demo/cases');
-    const data = await res.json();
-    container.innerHTML = '';
-
-    data.cases.forEach(c => {
-      const card = document.createElement('div');
-      card.className = `relation-card card-${c.category === 'failure_case' ? 'failure' : c.category}`;
-
-      if (c.category === 'failure_case') {
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <span class="badge badge-purple">${c.title}</span>
-              <h3 style="font-size: 1.05rem; margin-top: 0.4rem; font-family: var(--font-display);">${c.metric}</h3>
-            </div>
-            <span class="badge badge-purple">Audit & Mitigation</span>
-          </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">${c.problem_description}</p>
-          
-          <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid var(--accent-purple);">
-            <strong>Observed Raw Snippet:</strong>
-            <pre style="margin-top: 0.3rem; color: #e2e8f0; font-family: monospace;">${c.observed_failure.raw_text_snippet}</pre>
-          </div>
-
-          <div class="reasoning-box" style="border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.08); color: #ddd6fe;">
-            <strong>🛡️ Hallucination Guard Result:</strong>
-            <p style="margin-top: 0.3rem;">${c.observed_failure.system_detection}</p>
-          </div>
-
-          <div style="font-size: 0.8rem; color: var(--text-muted);">
-            <strong>Engineering Next Steps:</strong>
-            <p style="margin-top: 0.2rem; white-space: pre-line;">${c.what_we_would_improve_next}</p>
-          </div>
-        `;
-      } else {
-        const badgeClass = c.category === 'corroborates' ? 'badge-emerald' : (c.category === 'contradicts' ? 'badge-crimson' : 'badge-amber');
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <span class="badge ${badgeClass}">${c.title}</span>
-              <h3 style="font-size: 1.05rem; margin-top: 0.4rem; font-family: var(--font-display);">${c.metric}</h3>
-            </div>
-            <span class="badge ${badgeClass}">${c.category.toUpperCase()}</span>
-          </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">${c.summary}</p>
-          
-          <div class="facts-comparison">
-            <div class="fact-box">
-              <span class="fact-meta">📄 ${c.fact_a.document} (P. ${c.fact_a.page})</span>
-              <span class="fact-main">${c.fact_a.subject} &bull; ${c.fact_a.predicate} &bull; ${c.fact_a.value}</span>
-              <span class="fact-quote">"${c.fact_a.quote}"</span>
-            </div>
-            <div class="fact-box">
-              <span class="fact-meta">📄 ${c.fact_b.document} (P. ${c.fact_b.page})</span>
-              <span class="fact-main">${c.fact_b.subject} &bull; ${c.fact_b.predicate} &bull; ${c.fact_b.value}</span>
-              <span class="fact-quote">"${c.fact_b.quote}"</span>
-            </div>
-          </div>
-
-          <div class="reasoning-box">
-            <strong>🧠 System Reasoning:</strong>
-            <p style="margin-top: 0.3rem;">${c.system_reasoning}</p>
-          </div>
-        `;
-      }
-      container.appendChild(card);
-    });
-  } catch (err) {
-    container.innerHTML = '<div style="color: var(--accent-crimson);">Failed to load demo cases.</div>';
-  }
-}
-
 async function loadRelations() {
   const container = document.getElementById('relationsContainer');
   const typeFilter = document.getElementById('relationTypeFilter').value;
-  container.innerHTML = '<div style="color: var(--text-muted);">Loading discovered cross-document relationships...</div>';
+  container.innerHTML = '<div style="color: var(--text-muted);">Loading relationships...</div>';
 
   try {
     const url = `/api/relations?limit=100${typeFilter ? `&type=${typeFilter}` : ''}`;
@@ -130,7 +49,7 @@ async function loadRelations() {
     container.innerHTML = '';
 
     if (data.relations.length === 0) {
-      container.innerHTML = '<div style="color: var(--text-muted);">No cross-document relationships discovered yet. Ingest 2 or more PDFs or view the 4 Demo Cases tab.</div>';
+      container.innerHTML = '<div style="color: var(--text-muted);">No relationships discovered yet. Ingest 2 or more PDFs to begin.</div>';
       return;
     }
 
@@ -141,7 +60,7 @@ async function loadRelations() {
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span class="badge ${badgeClass}">${r.type.toUpperCase()}</span>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">Diff: ${r.difference_type || 'none'}</span>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">${r.difference_type || ''}</span>
         </div>
         <div class="facts-comparison">
           <div class="fact-box">
@@ -163,7 +82,7 @@ async function loadRelations() {
       container.appendChild(card);
     });
   } catch (err) {
-    container.innerHTML = '<div style="color: var(--accent-crimson);">Failed to load relations.</div>';
+    container.innerHTML = '<div style="color: var(--accent-crimson);">Failed to load relationships.</div>';
   }
 }
 
@@ -183,7 +102,7 @@ async function loadFacts() {
     tbody.innerHTML = '';
 
     if (data.facts.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="color: var(--text-muted); text-align: center;">No facts match query.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="color: var(--text-muted); text-align: center;">No facts found.</td></tr>';
       return;
     }
 
@@ -201,10 +120,10 @@ async function loadFacts() {
         <td style="color: var(--text-muted);">${f.predicate}</td>
         <td style="font-weight: 600; color: #a5b4fc;">${f.value}</td>
         <td><span style="font-size: 0.75rem; color: var(--text-dim);">${f.time_scope || ''} ${f.unit ? `(${f.unit})` : ''}</span></td>
-        <td>${extraTags || '<span style="color: var(--text-dim); font-size: 0.75rem;">None</span>'}</td>
+        <td>${extraTags || '<span style="color: var(--text-dim); font-size: 0.75rem;">—</span>'}</td>
         <td>
           <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="openEvidenceModal('${f.id}')">
-            🔍 Grounding
+            🔍 Inspect
           </button>
         </td>
       `;
@@ -218,14 +137,13 @@ async function loadFacts() {
 async function loadDocuments() {
   const tbody = document.getElementById('documentsTableBody');
   const docFilter = document.getElementById('factDocFilter');
-  tbody.innerHTML = '<tr><td colspan="7" style="color: var(--text-muted); text-align: center;">Loading documents...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" style="color: var(--text-muted); text-align: center;">Loading...</td></tr>';
 
   try {
     const res = await fetch('/api/documents');
     const docs = await res.json();
     tbody.innerHTML = '';
 
-    // Update filter dropdown
     docFilter.innerHTML = '<option value="">All Documents</option>';
     docs.forEach(d => {
       const opt = document.createElement('option');
@@ -235,23 +153,23 @@ async function loadDocuments() {
     });
 
     if (docs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="color: var(--text-muted); text-align: center;">No documents ingested yet. Upload a PDF above.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="color: var(--text-muted); text-align: center;">No documents yet. Upload a PDF above.</td></tr>';
       return;
     }
 
     docs.forEach(d => {
       const tr = document.createElement('tr');
       const sizeMb = (d.file_size / (1024 * 1024)).toFixed(2);
-      const statusBadge = d.status === 'ready' 
-        ? '<span class="badge badge-emerald">Ready</span>' 
-        : (d.status === 'processing' ? '<span class="badge badge-amber">Streaming...</span>' : '<span class="badge badge-crimson">Failed</span>');
+      const statusBadge = d.status === 'ready'
+        ? '<span class="badge badge-emerald">Ready</span>'
+        : (d.status === 'processing' ? '<span class="badge badge-amber">Processing...</span>' : '<span class="badge badge-crimson">Failed</span>');
 
       tr.innerHTML = `
         <td style="font-weight: 600;">${d.filename}</td>
-        <td>${d.page_count} pages</td>
+        <td>${d.page_count}</td>
         <td>${sizeMb} MB</td>
         <td>${statusBadge}</td>
-        <td><span class="badge badge-indigo">${d.fact_count} facts</span></td>
+        <td><span class="badge badge-indigo">${d.fact_count}</span></td>
         <td style="color: var(--text-dim); font-size: 0.75rem;">${d.uploaded_at ? new Date(d.uploaded_at).toLocaleString() : ''}</td>
         <td>
           <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="deleteDocument('${d.id}')">
@@ -280,17 +198,16 @@ async function openEvidenceModal(factId) {
     const statusBadge = document.getElementById('modalGroundingStatus');
     if (fact.is_hallucinated_quote) {
       statusBadge.className = 'badge badge-crimson';
-      statusBadge.textContent = 'Hallucination Guard Triggered';
+      statusBadge.textContent = 'Hallucination Flagged';
     } else {
       statusBadge.className = 'badge badge-emerald';
-      statusBadge.textContent = 'Verified Grounded Substring';
+      statusBadge.textContent = 'Verified';
     }
 
-    // Full page text with highlighted quote
     const pageText = fact.page_full_text || fact.quote;
     const quote = fact.quote;
     const box = document.getElementById('modalEvidenceText');
-    
+
     if (pageText.includes(quote)) {
       const parts = pageText.split(quote);
       box.innerHTML = `${escapeHtml(parts[0])}<mark class="highlighted-quote">${escapeHtml(quote)}</mark>${escapeHtml(parts.slice(1).join(quote))}`;
@@ -299,7 +216,6 @@ async function openEvidenceModal(factId) {
     }
 
     document.getElementById('modalExtraJson').textContent = JSON.stringify(fact.extra || {}, null, 2);
-
     document.getElementById('evidenceModal').classList.add('open');
   } catch (err) {
     alert('Failed to load evidence details.');
@@ -307,9 +223,7 @@ async function openEvidenceModal(factId) {
 }
 
 function closeModal(e) {
-  if (e.target.id === 'evidenceModal') {
-    closeModalDirect();
-  }
+  if (e.target.id === 'evidenceModal') closeModalDirect();
 }
 
 function closeModalDirect() {
@@ -325,20 +239,16 @@ function initDropzone() {
     dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
   });
   dropzone.addEventListener('drop', (e) => {
-    if (e.dataTransfer.files.length > 0) {
-      uploadFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
   });
 }
 
 function handleFileSelect(e) {
-  if (e.target.files.length > 0) {
-    uploadFile(e.target.files[0]);
-  }
+  if (e.target.files.length > 0) uploadFile(e.target.files[0]);
 }
 
 async function uploadFile(file) {
-  if (!file.name.toLowerCase().endswith?.('.pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) {
     alert('Please select a PDF file.');
     return;
   }
@@ -346,28 +256,21 @@ async function uploadFile(file) {
   const progress = document.getElementById('uploadProgress');
   const statusText = document.getElementById('uploadStatusText');
   progress.style.display = 'block';
-  statusText.textContent = `Ingesting ${file.name}: Streaming pages & extracting facts...`;
+  statusText.textContent = `Processing ${file.name}...`;
 
   const formData = new FormData();
   formData.append('file', file);
 
   try {
-    const res = await fetch('/api/documents', {
-      method: 'POST',
-      body: formData,
-    });
-
+    const res = await fetch('/api/documents', { method: 'POST', body: formData });
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.detail || 'Upload failed');
     }
-
-    statusText.textContent = `Successfully processed ${file.name}!`;
+    statusText.textContent = `Done — ${file.name} ingested.`;
     setTimeout(() => { progress.style.display = 'none'; }, 3000);
-
     loadDocuments();
     loadStats();
-    loadFacts();
   } catch (err) {
     alert(`Upload error: ${err.message}`);
     progress.style.display = 'none';
@@ -375,12 +278,11 @@ async function uploadFile(file) {
 }
 
 async function deleteDocument(docId) {
-  if (!confirm('Are you sure you want to delete this document and its associated facts?')) return;
+  if (!confirm('Delete this document and all its facts?')) return;
   try {
     await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
     loadDocuments();
     loadStats();
-    loadFacts();
   } catch (err) {
     alert('Failed to delete document.');
   }
