@@ -7,6 +7,25 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDocuments();
 });
 
+/* ── Toast ── */
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(closeToast, 5000);
+}
+
+function closeToast() {
+  const toast = document.getElementById('toast');
+  toast.className = '';
+}
+
+/* ── Confirm replacement ── */
+function confirmAction(msg) {
+  return window.confirm(msg);
+}
+
 function switchTab(tabId) {
   currentTab = tabId;
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
@@ -28,9 +47,9 @@ async function loadStats() {
     const res = await fetch('/api/relations/stats');
     if (!res.ok) return;
     const data = await res.json();
-    document.getElementById('statDocs').textContent        = data.documents;
-    document.getElementById('statFacts').textContent       = data.facts;
-    document.getElementById('statRelations').textContent   = data.relations;
+    document.getElementById('statDocs').textContent         = data.documents;
+    document.getElementById('statFacts').textContent        = data.facts;
+    document.getElementById('statRelations').textContent    = data.relations;
     document.getElementById('statCorroborates').textContent = data.breakdown.corroborates;
     document.getElementById('statContradicts').textContent  = data.breakdown.contradicts;
     document.getElementById('statReconciled').textContent   = data.breakdown.reconciled;
@@ -40,13 +59,13 @@ async function loadStats() {
 }
 
 async function loadRelations() {
-  const container = document.getElementById('relationsContainer');
+  const container  = document.getElementById('relationsContainer');
   const typeFilter = document.getElementById('relationTypeFilter').value;
   container.innerHTML = skeletonCards(3);
 
   try {
     const url = `/api/relations?limit=100${typeFilter ? `&type=${typeFilter}` : ''}`;
-    const res = await fetch(url);
+    const res  = await fetch(url);
     const data = await res.json();
     container.innerHTML = '';
 
@@ -62,26 +81,24 @@ async function loadRelations() {
     data.relations.forEach(r => {
       const badgeClass = r.type === 'corroborates' ? 'badge-emerald' : r.type === 'contradicts' ? 'badge-crimson' : 'badge-amber';
       const card = document.createElement('div');
-      card.className = `relation-card`;
+      card.className = 'relation-card';
       card.innerHTML = `
-        <div class="relation-card-header">
-          <span class="badge ${badgeClass}">${r.type.toUpperCase()}</span>
-          <span class="relation-card-diff">${r.difference_type || ''}</span>
+        <div class="relation-card-type">
+          <span class="badge ${badgeClass}">${r.type}</span>
+          <span class="relation-card-diff">${escapeHtml(r.difference_type || '')}</span>
         </div>
-        <div class="facts-comparison">
-          <div class="fact-box">
-            <span class="fact-meta">${r.fact_a?.doc_name || 'Fact A'} &middot; p.${r.fact_a?.page || '?'}</span>
-            <span class="fact-main">${escapeHtml(r.fact_a?.subject || '')} &middot; ${escapeHtml(r.fact_a?.predicate || '')} &middot; ${escapeHtml(r.fact_a?.value || '')}</span>
-            <span class="fact-quote">${escapeHtml(r.fact_a?.quote || '')}</span>
-          </div>
-          <div class="fact-box">
-            <span class="fact-meta">${r.fact_b?.doc_name || 'Fact B'} &middot; p.${r.fact_b?.page || '?'}</span>
-            <span class="fact-main">${escapeHtml(r.fact_b?.subject || '')} &middot; ${escapeHtml(r.fact_b?.predicate || '')} &middot; ${escapeHtml(r.fact_b?.value || '')}</span>
-            <span class="fact-quote">${escapeHtml(r.fact_b?.quote || '')}</span>
-          </div>
+        <div class="fact-box">
+          <span class="fact-meta">${escapeHtml(r.fact_a?.doc_name || 'Doc A')} &middot; p.${r.fact_a?.page || '?'}</span>
+          <span class="fact-main">${escapeHtml(r.fact_a?.subject || '')} &middot; ${escapeHtml(r.fact_a?.predicate || '')} &middot; ${escapeHtml(r.fact_a?.value || '')}</span>
+          <span class="fact-quote">${escapeHtml(r.fact_a?.quote || '')}</span>
+        </div>
+        <div class="fact-box">
+          <span class="fact-meta">${escapeHtml(r.fact_b?.doc_name || 'Doc B')} &middot; p.${r.fact_b?.page || '?'}</span>
+          <span class="fact-main">${escapeHtml(r.fact_b?.subject || '')} &middot; ${escapeHtml(r.fact_b?.predicate || '')} &middot; ${escapeHtml(r.fact_b?.value || '')}</span>
+          <span class="fact-quote">${escapeHtml(r.fact_b?.quote || '')}</span>
         </div>
         <div class="reasoning-box">
-          <strong>Reasoning</strong>
+          <div class="reasoning-label">Reasoning</div>
           ${escapeHtml(r.explanation)}
         </div>
       `;
@@ -93,7 +110,7 @@ async function loadRelations() {
 }
 
 async function loadFacts() {
-  const tbody = document.getElementById('factsTableBody');
+  const tbody  = document.getElementById('factsTableBody');
   const search = document.getElementById('factSearchInput').value;
   const docId  = document.getElementById('factDocFilter').value;
   tbody.innerHTML = skeletonRows(4, 8);
@@ -122,13 +139,13 @@ async function loadFacts() {
       tr.innerHTML = `
         <td class="td-filename" title="${escapeHtml(f.doc_name || '')}">${escapeHtml(f.doc_name || 'Document')}</td>
         <td class="td-dim">${f.page}</td>
-        <td style="font-weight:600;">${escapeHtml(f.subject)}</td>
+        <td style="font-weight:700;">${escapeHtml(f.subject)}</td>
         <td class="td-dim">${escapeHtml(f.predicate)}</td>
-        <td style="font-weight:600; color:#818cf8;">${escapeHtml(f.value)}</td>
+        <td style="font-weight:700;">${escapeHtml(f.value)}</td>
         <td class="td-dim">${escapeHtml(f.time_scope || '')}${f.unit ? ` (${escapeHtml(f.unit)})` : ''}</td>
         <td>${extraTags || '<span style="color:var(--text-3)">—</span>'}</td>
         <td>
-          <button class="btn btn-ghost" style="padding:0.25rem 0.625rem; font-size:0.75rem;" onclick="openEvidenceModal('${f.id}')">
+          <button class="btn btn-ghost" style="padding:0.2rem 0.5rem; font-size:0.6875rem;" onclick="openEvidenceModal('${f.id}')">
             Inspect
           </button>
         </td>
@@ -136,7 +153,7 @@ async function loadFacts() {
       tbody.appendChild(tr);
     });
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="8" style="color:var(--red); text-align:center; padding:2rem;">Failed to load facts.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="color:var(--c-cont); text-align:center; padding:2rem; font-family:var(--mono);">Failed to load facts.</td></tr>`;
   }
 }
 
@@ -181,14 +198,14 @@ async function loadDocuments() {
         <td class="td-dim" style="font-size:0.75rem;">${d.uploaded_at ? new Date(d.uploaded_at).toLocaleString() : '—'}</td>
         <td>
           <button class="btn btn-danger" onclick="deleteDocument('${d.id}')" title="Delete document">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           </button>
         </td>
       `;
       tbody.appendChild(tr);
     });
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red); text-align:center; padding:2rem;">Failed to load documents.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--c-cont); text-align:center; padding:2rem; font-family:var(--mono);">Failed to load documents.</td></tr>`;
   }
 }
 
@@ -197,11 +214,11 @@ async function openEvidenceModal(factId) {
     const res  = await fetch(`/api/facts/${factId}`);
     const fact = await res.json();
 
-    document.getElementById('modalDocTitle').textContent    = fact.doc_name || 'Document';
-    document.getElementById('modalPageBadge').textContent   = `Page ${fact.page}`;
-    document.getElementById('modalFactTriple').textContent  = `${fact.subject} — ${fact.predicate} — ${fact.value}`;
-    document.getElementById('modalCharSpan').textContent    = `[${fact.char_start} : ${fact.char_end}]`;
-    document.getElementById('modalBbox').textContent        = fact.bbox ? `[${fact.bbox.join(', ')}]` : 'N/A';
+    document.getElementById('modalDocTitle').textContent   = fact.doc_name || 'Document';
+    document.getElementById('modalPageBadge').textContent  = `Page ${fact.page}`;
+    document.getElementById('modalFactTriple').textContent = `${fact.subject} — ${fact.predicate} — ${fact.value}`;
+    document.getElementById('modalCharSpan').textContent   = `[${fact.char_start} : ${fact.char_end}]`;
+    document.getElementById('modalBbox').textContent       = fact.bbox ? `[${fact.bbox.join(', ')}]` : 'N/A';
 
     const statusBadge = document.getElementById('modalGroundingStatus');
     if (fact.is_hallucinated_quote) {
@@ -227,7 +244,7 @@ async function openEvidenceModal(factId) {
     document.getElementById('evidenceModal').classList.add('open');
     document.body.style.overflow = 'hidden';
   } catch (err) {
-    alert('Failed to load evidence details.');
+    showToast('Failed to load evidence details.', true);
   }
 }
 
@@ -266,7 +283,7 @@ function handleFileSelect(e) {
 
 async function uploadFile(file) {
   if (!file.name.toLowerCase().endsWith('.pdf')) {
-    alert('Please select a PDF file.');
+    showToast('Please select a PDF file.', true);
     return;
   }
 
@@ -285,23 +302,24 @@ async function uploadFile(file) {
       throw new Error(err.detail || 'Upload failed');
     }
     statusText.textContent = `Done — ${file.name} ingested.`;
+    showToast(`${file.name} ingested successfully.`);
     setTimeout(() => { progress.style.display = 'none'; }, 3000);
     loadDocuments();
     loadStats();
   } catch (err) {
-    alert(`Upload error: ${err.message}`);
+    showToast(`Upload error: ${err.message}`, true);
     progress.style.display = 'none';
   }
 }
 
 async function deleteDocument(docId) {
-  if (!confirm('Delete this document and all its facts?')) return;
+  if (!confirmAction('Delete this document and all its facts?')) return;
   try {
     await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
     loadDocuments();
     loadStats();
   } catch (err) {
-    alert('Failed to delete document.');
+    showToast('Failed to delete document.', true);
   }
 }
 
@@ -334,17 +352,17 @@ function emptyState(iconSvg, title, sub) {
 }
 
 function errorState(msg) {
-  return `<div class="empty-state"><p class="empty-state-title" style="color:var(--red)">${msg}</p></div>`;
+  return `<div class="empty-state"><p class="empty-state-title" style="color:var(--c-cont)">${msg}</p></div>`;
 }
 
 function svgUpload() {
-  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
 }
 
 function svgFacts() {
-  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
+  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
 }
 
 function svgRelations() {
-  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
+  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 }
