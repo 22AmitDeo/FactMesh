@@ -12,10 +12,12 @@ class Settings:
     VERSION: str = "0.1.0"
     
     # LLM configurations
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    _raw_groq = os.getenv("GROQ_API_KEY", "")
+    GROQ_API_KEY: str = "" if "your_" in _raw_groq else _raw_groq
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
+    _raw_gemini = os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
+    GEMINI_API_KEY: str = "" if "your_" in _raw_gemini else _raw_gemini
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
     
     # Embeddings
