@@ -2,6 +2,7 @@
 
 An end-to-end Fact Knowledge Layer that extracts structured facts from PDF documents, grounds every fact in verified character spans and spatial bounding boxes, and discovers cross-document relationships — corroborations, contradictions, and context-reconciled differences — using incremental vector retrieval and LLM reasoning.
 
+Video Link: https://youtu.be/leD2jIQZTmk
 ---
 
 ## Architecture
